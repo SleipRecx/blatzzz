@@ -1,5 +1,5 @@
 import React, { Fragment, useEffect, useRef, useState } from "react";
-import { getDatabase, onValue, ref as dbRef, set } from "firebase/database";
+import { getDatabase, onValue, ref as dbRef, set, get } from "firebase/database";
 import {
   deleteObject,
   getDownloadURL,
@@ -98,7 +98,7 @@ function Post({ uuid, avatarUrl, url, likes, username }) {
           image={url}
           alt="User uploaded"
         />
-        <CardContent>
+        <CardContent onClick={() => increase_likes(uuid)}>
           <IconButton>
             <ThumbUpIcon />
           </IconButton>
@@ -107,6 +107,13 @@ function Post({ uuid, avatarUrl, url, likes, username }) {
       </Card>
     </div>
   );
+}
+
+async function increase_likes(img_id) {
+  const db = getDatabase();
+  const databaseRef = dbRef(db, `posts/${img_id}/likes`);
+  const snapshot = await get(databaseRef);
+  set(databaseRef, snapshot.val() + 1);
 }
 
 function delete_image(image_ref) {
