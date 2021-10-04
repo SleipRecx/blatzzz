@@ -1,19 +1,32 @@
-import React, { useEffect, useRef, useState, Fragment } from "react";
-import { getDatabase, ref as dbRef, set, onValue } from "firebase/database";
-import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
+import React, { Fragment, useEffect, useRef, useState } from "react";
+import { getDatabase, onValue, ref as dbRef, set } from "firebase/database";
 import {
+  deleteObject,
+  getDownloadURL,
+  getStorage,
+  ref,
+  uploadBytes,
+} from "firebase/storage";
+
+import {
+  Avatar,
   Box,
   Card,
   CardContent,
+  CardHeader,
   CardMedia,
   CircularProgress,
+  IconButton,
 } from "@mui/material";
-import AuthProvider from "./Auth";
+import ThumbUpIcon from "@mui/icons-material/ThumbUp";
+import AuthProvider, { useAuth } from "./Auth";
 
 function UploadImage() {
   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState(null);
   const fileRef = useRef(null);
+
+  const user = useAuth();
 
   const db = getDatabase();
   const storage = getStorage();
@@ -44,6 +57,10 @@ function UploadImage() {
           const url = await getDownloadURL(imageRef);
           await set(dbRef(db, "posts/" + Date.now()), {
             url,
+            name: user.displayName,
+            avatar: user.photoURL,
+            likes: 0,
+            email: user.email,
           });
           fileRef.current.value = "";
           setLoading(false);
@@ -62,10 +79,19 @@ function UploadImage() {
   );
 }
 
-function Post({ uuid, url }) {
+function Post({ uuid, avatarUrl, url, likes, username }) {
   return (
     <div key={uuid} style={{ padding: 50 }}>
       <Card sx={{ maxWidth: 345 }}>
+        <CardHeader
+          avatar={
+            <Avatar src={avatarUrl} aria-label="recipe">
+              {username[0]}
+            </Avatar>
+          }
+          title={username}
+          subheader={new Date(parseInt(uuid)).toLocaleString()}
+        />
         <CardMedia
           component="img"
           height="350"
@@ -73,7 +99,10 @@ function Post({ uuid, url }) {
           alt="User uploaded"
         />
         <CardContent>
-          <p>{new Date(parseInt(uuid)).toLocaleString()}</p>
+          <IconButton>
+            <ThumbUpIcon />
+          </IconButton>
+          {likes}
         </CardContent>
       </Card>
     </div>
@@ -82,14 +111,16 @@ function Post({ uuid, url }) {
 
 function delete_image(image_ref) {
   return new Promise((resolve, reject) => {
-    deleteObject(image_ref).then(() => {
-      // File deleted successfully
-      resolve('deleted');
-    }).catch((error) => {
-      // Uh-oh, an error occurred!
-      reject(error);
-    });  
-  })
+    deleteObject(image_ref)
+      .then(() => {
+        // File deleted successfully
+        resolve("deleted");
+      })
+      .catch((error) => {
+        // Uh-oh, an error occurred!
+        reject(error);
+      });
+  });
 }
 
 async function delete_post(img_id, img_url) {
@@ -113,7 +144,7 @@ function Feed() {
       }
       const data = Object.entries(snapshot.val())
         .map(([key, value]) => {
-          return { id: key, url: value.url };
+          return { id: key, ...value };
         })
         .sort((a, b) => parseInt(b.id) - parseInt(a.id));
       setPosts(data);
@@ -124,10 +155,19 @@ function Feed() {
     <div style={{ display: "flex", flexDirection: "column" }}>
       {posts.map((post) => (
         <Fragment key={post.id}>
-          <Post uuid={post.id} url={post.url} />
-          {window.location.href.endsWith('admin') &&
-            <button onClick={() => delete_post(post.id, post.url)}>Delete image</button>
-          }
+          <Post
+            key={post.id}
+            uuid={post.id}
+            avatarUrl={post.avatar || post.url}
+            url={post.url}
+            likes={post.likes || 0}
+            username={post.name || "John Doe"}
+          />
+          {window.location.href.endsWith("admin") && (
+            <button onClick={() => delete_post(post.id, post.url)}>
+              Delete image
+            </button>
+          )}
         </Fragment>
       ))}
     </div>
