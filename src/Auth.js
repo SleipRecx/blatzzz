@@ -1,5 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
-import { GithubAuthProvider, signInWithPopup, getAuth } from "firebase/auth";
+import { getAuth, GithubAuthProvider, signInWithPopup } from "firebase/auth";
+import { Button } from "@mui/material";
+
 const provider = new GithubAuthProvider();
 
 const UserContext = React.createContext(null);
@@ -10,8 +12,19 @@ export function useAuth() {
 
 export default function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const auth = getAuth();
+    return auth.onAuthStateChanged((user) => {
+      setLoading(false);
+      if (user) {
+        setUser(user);
+      }
+    });
+  }, []);
+
+  const login = () => {
     const auth = getAuth();
     return auth.onAuthStateChanged((user) => {
       if (!user) {
@@ -27,9 +40,15 @@ export default function AuthProvider({ children }) {
         setUser(user);
       }
     });
-  }, []);
+  };
 
   return (
-    <UserContext.Provider value={user}>{user && children}</UserContext.Provider>
+    <div>
+      <UserContext.Provider value={user}>
+        {user
+          ? children
+          : !loading && <Button onClick={login}>Login with Github</Button>}
+      </UserContext.Provider>
+    </div>
   );
 }
