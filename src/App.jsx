@@ -44,7 +44,7 @@ function UploadImage() {
 function Post({ uuid, url }) {
   return (
     <div key={uuid}>
-      <img src={url} />
+      <img alt="user uploaded" src={url} />
       <p>{new Date(parseInt(uuid)).toLocaleString()}</p>
     </div>
   );
@@ -61,7 +61,7 @@ function Feed() {
       });
       setPosts(data);
     });
-  }, []);
+  }, [db]);
 
   const rawPosts = posts.map((post) => (
     <Post key={post.id} uuid={post.id} url={post.url} />
