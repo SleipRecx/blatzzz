@@ -58,8 +58,6 @@ function mergePosts(a, b) {
 
 function UploadImage() {
   const [loading, setLoading] = useState(false);
-  const [file, setFile] = useState(null);
-  const fileRef = useRef(null);
 
   const user = useAuth();
 
@@ -69,18 +67,14 @@ function UploadImage() {
   return (
     <div>
       <input
-        ref={fileRef}
         type="file"
         accept=".png, .jpg, .jpeg .gif"
-        onChange={(event) => {
-          setFile(event.target.files[0]);
-        }}
-      />
-      <br />
-      <br />
-      <button
-        type="submit"
-        onClick={async () => {
+        onChange={async (event) => {
+          const file = event.target.files[0];
+          const target = event.nativeEvent.target;
+          if (!file) {
+            return;
+          }
           setLoading(true);
 
           const imageRef = ref(
@@ -97,12 +91,10 @@ function UploadImage() {
             likes: 0,
             email: user.email,
           });
-          fileRef.current.value = "";
+          target.value = "";
           setLoading(false);
         }}
-      >
-        Submit
-      </button>
+      />
       <br />
       <br />
       {loading && (
