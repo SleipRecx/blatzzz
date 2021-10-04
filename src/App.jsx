@@ -115,8 +115,8 @@ function UploadImage() {
 
 function Post({ uuid, avatarUrl, url, likes, username }) {
   return (
-    <div key={uuid} style={{ padding: 50 }}>
-      <Card sx={{ maxWidth: 345 }}>
+    <div key={uuid} style={{ marginBottom: 50, marginTop: 50 }}>
+      <Card>
         <CardHeader
           avatar={
             <Avatar src={avatarUrl} aria-label="recipe">
@@ -259,25 +259,29 @@ function App() {
     <div className="App">
       <AuthProvider>
         <div style={{ backgroundColor: "#94d9b7", margin: -30, padding: 30 }}>
-          <div>
-            <span
-              style={{
-                fontFace: "San Fransisco",
-                fontSize: 48,
-                fontWeight: 300,
-              }}
-            >
-              Blatzzz
-            </span>
-            <div style={{ display: "inline", float: "right" }}>
-              <SelfAvatar />
+          <div className="center-container">
+            <div>
+              <span
+                style={{
+                  fontFace: "San Fransisco",
+                  fontSize: 48,
+                  fontWeight: 300,
+                }}
+              >
+                Blatzzz
+              </span>
+              <div style={{ display: "inline", float: "right" }}>
+                <SelfAvatar />
+              </div>
+            </div>
+            <div style={{ marginTop: "50px", textAlign: "center" }}>
+              <UploadImage />
             </div>
           </div>
-          <div style={{ marginTop: 20 }}>
-            <UploadImage />
-          </div>
         </div>
-        <Feed />
+        <div className="center-container">
+          <Feed />
+        </div>
       </AuthProvider>
     </div>
   );
