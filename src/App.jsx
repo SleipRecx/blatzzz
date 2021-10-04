@@ -8,6 +8,7 @@ import {
   CardMedia,
   CircularProgress,
 } from "@mui/material";
+import AuthProvider from "./Auth";
 
 function UploadImage() {
   const [loading, setLoading] = useState(false);
@@ -101,9 +102,11 @@ function Feed() {
 function App() {
   return (
     <div className="App">
-      <h1>Blatzzz</h1>
-      <UploadImage />
-      <Feed />
+      <AuthProvider>
+        <h1>Blatzzz</h1>
+        <UploadImage />
+        <Feed />
+      </AuthProvider>
     </div>
   );
 }
