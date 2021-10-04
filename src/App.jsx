@@ -34,7 +34,12 @@ function UploadImage() {
         type="submit"
         onClick={async () => {
           setLoading(true);
-          const imageRef = ref(storage, "images/" + file.name);
+
+          const imageRef = ref(
+            storage,
+            "images/" + Date.now() + "_" + file.name
+          );
+
           await uploadBytes(imageRef, file);
           const url = await getDownloadURL(imageRef);
           await set(dbRef(db, "posts/" + Date.now()), {
