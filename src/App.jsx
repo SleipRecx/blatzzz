@@ -19,7 +19,7 @@ function UploadImage() {
   const storage = getStorage();
 
   return (
-    <div style={{ padding: 50 }}>
+    <div>
       <input
         ref={fileRef}
         type="file"
@@ -107,8 +107,21 @@ function App() {
   return (
     <div className="App">
       <AuthProvider>
-        <h1>Blatzzz</h1>
-        <UploadImage />
+        <div style={{ backgroundColor: "#94d9b7", margin: -30, padding: 30 }}>
+          <span
+            style={{
+              textAlign: "center",
+              fontFace: "San Fransisco",
+              fontSize: 48,
+              fontWeight: 300,
+            }}
+          >
+            Blatzzz
+          </span>
+          <div style={{ marginTop: 20 }}>
+            <UploadImage />
+          </div>
+        </div>
         <Feed />
       </AuthProvider>
     </div>
