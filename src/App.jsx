@@ -153,7 +153,7 @@ function Feed() {
         .map(([key, value]) => {
           return { id: key, ...value };
         })
-        .sort((a, b) => parseInt(b.id) - parseInt(a.id));
+        .sort((a, b) => b.likes - a.likes);
       setPosts(data);
     });
   }, [db]);
