@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, Fragment } from "react";
 import { getDatabase, ref as dbRef, set, onValue } from "firebase/database";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import {
   Box,
   Card,
@@ -75,6 +75,27 @@ function Post({ uuid, url }) {
   );
 }
 
+function delete_image(image_ref) {
+  return new Promise((resolve, reject) => {
+    deleteObject(image_ref).then(() => {
+      // File deleted successfully
+      resolve('deleted');
+    }).catch((error) => {
+      // Uh-oh, an error occurred!
+      reject(error);
+    });  
+  })
+}
+
+async function delete_post(img_id, img_url) {
+  const db = getDatabase();
+  const databaseRef = dbRef(db, `posts/${img_id}`);
+  const storage = getStorage();
+  const imageRef = ref(storage, img_url);
+  await delete_image(imageRef);
+  set(databaseRef, null);
+}
+
 function Feed() {
   const [posts, setPosts] = useState([]);
   const db = getDatabase();
@@ -97,7 +118,12 @@ function Feed() {
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
       {posts.map((post) => (
-        <Post key={post.id} uuid={post.id} url={post.url} />
+        <Fragment key={post.id}>
+          <Post uuid={post.id} url={post.url} />
+          {window.location.href.endsWith('admin') &&
+            <button onClick={() => delete_post(post.id, post.url)}>Delete image</button>
+          }
+        </Fragment>
       ))}
     </div>
   );
