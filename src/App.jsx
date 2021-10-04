@@ -1,13 +1,22 @@
-import React, { Fragment, useEffect, useRef, useState } from "react";
-import { getDatabase, onValue, ref as dbRef, set, get } from "firebase/database";
+import { useEffect, useRef, useState, Fragment } from "react";
 import {
-  deleteObject,
-  getDownloadURL,
   getStorage,
   ref,
   uploadBytes,
+  getDownloadURL,
+  deleteObject,
 } from "firebase/storage";
-
+import {
+  getDatabase,
+  ref as dbRef,
+  get,
+  set,
+  onValue,
+  limitToLast,
+  endBefore,
+  query,
+  orderByKey,
+} from "firebase/database";
 import {
   Avatar,
   Box,
@@ -17,9 +26,35 @@ import {
   CardMedia,
   CircularProgress,
   IconButton,
+  Button,
 } from "@mui/material";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import AuthProvider, { useAuth } from "./Auth";
+
+const LOADING_CHUNK_SIZE = 25;
+
+/* Transforms posts from raw firebase output to list of nicely formatted objects. */
+function transformPosts(raw) {
+  return Object.entries(raw)
+    .map(([id, value]) => ({ ...value, id }))
+    .sort((a, b) => parseInt(b.id) - parseInt(a.id));
+}
+
+/* Merges two lists of posts ordered by id. Prefer items in b. */
+function mergePosts(a, b) {
+  /* Could be done in O(n) if needed later. */
+  const seenSet = new Set();
+  const merged = [];
+  for (const item of [...b, ...a]) {
+    if (seenSet.has(item.id)) {
+      continue;
+    }
+    seenSet.add(item.id);
+    merged.push(item);
+  }
+  merged.sort((a, b) => b.id - a.id);
+  return merged;
+}
 
 function UploadImage() {
   const [loading, setLoading] = useState(false);
@@ -141,22 +176,42 @@ async function delete_post(img_id, img_url) {
 
 function Feed() {
   const [posts, setPosts] = useState([]);
-  const db = getDatabase();
+  const [reachedEndOfFeed, setReachedEndOfFeed] = useState(false);
+  const db = useRef(getDatabase());
+
   useEffect(() => {
-    const databaseRef = dbRef(db, "posts/");
+    /* TODO: I haven't tested how well this works with new posts coming in in
+     * real time. */
+    const databaseRef = query(
+      dbRef(db.current, "posts/"),
+      orderByKey(),
+      limitToLast(LOADING_CHUNK_SIZE)
+    );
     return onValue(databaseRef, (snapshot) => {
-      if (!snapshot.val()) {
-        setPosts([]);
+      const value = snapshot.val();
+      if (!value || value.length < LOADING_CHUNK_SIZE) {
+        setReachedEndOfFeed(true);
         return;
       }
-      const data = Object.entries(snapshot.val())
-        .map(([key, value]) => {
-          return { id: key, ...value };
-        })
-        .sort((a, b) => parseInt(b.id) - parseInt(a.id));
-      setPosts(data);
+      const data = transformPosts(value);
+      setPosts((old) => mergePosts(old, data));
     });
-  }, [db]);
+  }, []);
+
+  const loadMore = async () => {
+    const oldestId = (posts[posts.length - 1] || {}).id;
+    /* This triggers onValue snapshot listener with the data for some reason
+     * (maybe I should read some more firebase docs), so we ignore the results
+     * here and pick them up there instead. */
+    get(
+      query(
+        dbRef(db.current, "posts"),
+        limitToLast(LOADING_CHUNK_SIZE),
+        orderByKey(),
+        ...(oldestId ? [endBefore(oldestId)] : [])
+      )
+    );
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
@@ -177,6 +232,17 @@ function Feed() {
           )}
         </Fragment>
       ))}
+
+      {!reachedEndOfFeed && posts.length > 0 && (
+        <Button
+          onClick={(e) => {
+            e.preventDefault();
+            loadMore();
+          }}
+        >
+          Load more...
+        </Button>
+      )}
     </div>
   );
 }
