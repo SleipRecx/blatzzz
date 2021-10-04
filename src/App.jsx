@@ -67,7 +67,9 @@ function UploadImage() {
   return (
     <div>
       <input
+        id="image-upload-input"
         type="file"
+        style={{ display: "none" }}
         accept=".png, .jpg, .jpeg .gif"
         onChange={async (event) => {
           const file = event.target.files[0];
@@ -95,6 +97,11 @@ function UploadImage() {
           setLoading(false);
         }}
       />
+      <label htmlFor="image-upload-input">
+        <Button variant="contained" component="span">
+          Upload
+        </Button>
+      </label>
       <br />
       <br />
       {loading && (
