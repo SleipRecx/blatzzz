@@ -37,7 +37,7 @@ const LOADING_CHUNK_SIZE = 25;
 function transformPosts(raw) {
   return Object.entries(raw)
     .map(([id, value]) => ({ ...value, id }))
-    .sort((a, b) => parseInt(b.id) - parseInt(a.id));
+    .sort((a, b) => b.likes - a.likes);
 }
 
 /* Merges two lists of posts ordered by id. Prefer items in b. */
@@ -52,7 +52,7 @@ function mergePosts(a, b) {
     seenSet.add(item.id);
     merged.push(item);
   }
-  merged.sort((a, b) => b.id - a.id);
+  merged.sort((a, b) => b.likes - a.likes);
   return merged;
 }
 
