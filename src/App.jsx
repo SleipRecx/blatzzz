@@ -80,6 +80,10 @@ function Feed() {
   useEffect(() => {
     const databaseRef = dbRef(db, "posts/");
     return onValue(databaseRef, (snapshot) => {
+      if (!snapshot.val()) {
+        setPosts([]);
+        return;
+      }
       const data = Object.entries(snapshot.val())
         .map(([key, value]) => {
           return { id: key, url: value.url };
