@@ -40,6 +40,22 @@ function transformPosts(raw) {
     .sort((a, b) => parseInt(b.id) - parseInt(a.id));
 }
 
+/* Merges two lists of posts ordered by id. Prefer items in b. */
+function mergePosts(a, b) {
+  /* Could be done in O(n) if needed later. */
+  const seenSet = new Set();
+  const merged = [];
+  for (const item of [...b, ...a]) {
+    if (seenSet.has(item.id)) {
+      continue;
+    }
+    seenSet.add(item.id);
+    merged.push(item);
+  }
+  merged.sort((a, b) => b.id - a.id);
+  return merged;
+}
+
 function UploadImage() {
   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState(null);
@@ -178,7 +194,7 @@ function Feed() {
         return;
       }
       const data = transformPosts(value);
-      setPosts((old) => [...old, ...data]);
+      setPosts((old) => mergePosts(old, data));
     });
   }, []);
 
