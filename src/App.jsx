@@ -174,21 +174,33 @@ function Feed() {
   );
 }
 
+const SelfAvatar = () => {
+  const user = useAuth();
+
+  return (
+    <Avatar alt={user?.displayName ?? "John Doe"} src={user?.photoURL ?? ""} />
+  );
+};
+
 function App() {
   return (
     <div className="App">
       <AuthProvider>
         <div style={{ backgroundColor: "#94d9b7", margin: -30, padding: 30 }}>
-          <span
-            style={{
-              textAlign: "center",
-              fontFace: "San Fransisco",
-              fontSize: 48,
-              fontWeight: 300,
-            }}
-          >
-            Blatzzz
-          </span>
+          <div>
+            <span
+              style={{
+                fontFace: "San Fransisco",
+                fontSize: 48,
+                fontWeight: 300,
+              }}
+            >
+              Blatzzz
+            </span>
+            <div style={{ display: "inline", float: "right" }}>
+              <SelfAvatar />
+            </div>
+          </div>
           <div style={{ marginTop: 20 }}>
             <UploadImage />
           </div>
