@@ -17,4 +17,4 @@ jobs:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_HYRE_DEMO_CA592 }}'
           channelId: live
-          projectId: blatzzz
+          projectId: hyre-demo-ca592
